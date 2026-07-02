@@ -4,18 +4,19 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # لتشغيل الدامب يدوياً في أي وقت من الموقع
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   dump-process:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. جلب الملفات من الريبو
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # 2. التحقق من وجود ملف المكتبة libgame.so
     - name: Verify Library File
       run: |
         if [ -f "libgame.so" ]; then
@@ -24,17 +25,14 @@ jobs:
           echo "Warning: libgame.so not found in root, searching folders..."
         fi
 
-    # 3. تجهيز ملف الدامب وضغطه لحمايته وتقليل حجمه عند التحميل
     - name: Archive and Create Dump
       run: |
         mkdir -p dump_output
-        # نسخ ملف الـ so الموضح بالصورة إلى مجلد الدامب
         find . -name "libgame.so" -exec cp {} dump_output/ \;
         cd dump_output
         zip -r ../libgame_dump.zip .
         cd ..
 
-    # 4. رفع الدامب إلى الـ Releases ليعطيك رابط تحميل مباشر وسريع
     - name: Release Library Dump
       uses: softprops/action-gh-release@v2
       with:
